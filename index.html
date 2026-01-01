@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>新年快乐 🎆</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:black;}
+#text{position:absolute;top:40%;width:100%;text-align:center;color:#fff;
+font-size:48px;text-shadow:0 0 20px gold,0 0 40px red;}
+canvas{display:block;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="text">🎉 新 年 快 乐 🎉</div>
+<script>
+const c=document.getElementById("c"),ctx=c.getContext("2d");
+function resize(){c.width=innerWidth;c.height=innerHeight}resize();onresize=resize;
+class F{constructor(){this.x=Math.random()*c.width;this.y=c.height;
+this.tx=Math.random()*c.width;this.ty=Math.random()*c.height/2;
+this.vx=(this.tx-this.x)/60;this.vy=(this.ty-this.y)/60;this.e=false;this.p=[]}
+u(){if(!this.e){this.x+=this.vx;this.y+=this.vy;if(Math.abs(this.y-this.ty)<5)this.xp()}
+else this.p.forEach(i=>i.u())}
+d(){if(!this.e){ctx.fillStyle="white";ctx.fillRect(this.x,this.y,2,2)}
+else this.p.forEach(i=>i.d())}
+xp(){this.e=true;for(let i=0;i<60;i++)this.p.push(new P(this.x,this.y))}}
+class P{constructor(x,y){this.x=x;this.y=y;let a=Math.random()*6.28,s=Math.random()*4+2;
+this.vx=Math.cos(a)*s;this.vy=Math.sin(a)*s;this.l=80;this.c=`hsl(${Math.random()*360},100%,60%)`}
+u(){this.x+=this.vx;this.y+=this.vy;this.vy+=.05;this.l--}
+d(){if(this.l>0){ctx.fillStyle=this.c;ctx.fillRect(this.x,this.y,2,2)}}}
+let fs=[];
+(function a(){requestAnimationFrame(a);
+ctx.fillStyle="rgba(0,0,0,0.2)";ctx.fillRect(0,0,c.width,c.height);
+if(Math.random()<0.05)fs.push(new F());
+fs=fs.filter(f=>!f.e||f.p.some(p=>p.l>0));fs.forEach(f=>{f.u();f.d()})})();
+</script>
+</body>
+</html>

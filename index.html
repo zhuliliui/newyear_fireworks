@@ -2,107 +2,114 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>2026 暴富烟花</title>
+<title>新年快乐 🎆</title>
 <style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:"微软雅黑";}
-canvas{position:fixed;top:0;left:0;}
-.bless{
- position:absolute;
- font-size:28px;
- font-weight:bold;
- color:hsl(var(--h),100%,70%);
- text-shadow:0 0 12px #fff,0 0 25px currentColor;
- animation:fly 6s linear forwards;
- white-space:nowrap;
+html,body{
+  margin:0;
+  padding:0;
+  background:black;
+  overflow:hidden;
+  font-family:"Microsoft YaHei",sans-serif;
 }
-@keyframes fly{
- from{transform:translate(var(--x1),var(--y1)) scale(0.5) rotate(0deg);opacity:1}
- to{transform:translate(var(--x2),var(--y2)) scale(1.4) rotate(360deg);opacity:0}
+canvas{position:fixed;top:0;left:0;}
+#msg{
+  position:fixed;
+  top:45%;
+  width:100%;
+  text-align:center;
+  font-size:64px;
+  font-weight:bold;
+  color:#fff;
+  text-shadow:0 0 20px gold,0 0 40px red;
+  opacity:0;
+  transition:opacity 1.5s;
 }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="msg"></div>
 
 <script>
-const blessList=["💰 暴富","📈 升职加薪","🍀 中彩票","💖 脱单","📚 全部上岸",
-"✨ 暴瘦","🎯 心想事成","🚀 年入百万","🏆 考研成功","🏡 买房买车"];
+const cvs=document.getElementById("c");
+const ctx=cvs.getContext("2d");
+let w,h;
+function resize(){w=cvs.width=innerWidth;h=cvs.height=innerHeight;}
+window.onresize=resize; resize();
 
-function spawnBless(){
- const b=document.createElement("div");
- b.className="bless";
- b.innerText=blessList[Math.floor(Math.random()*blessList.length)];
- b.style.setProperty("--h",Math.random()*360);
- b.style.setProperty("--x1",`${Math.random()*innerWidth}px`);
- b.style.setProperty("--y1",`${innerHeight+50}px`);
- b.style.setProperty("--x2",`${Math.random()*innerWidth}px`);
- b.style.setProperty("--y2",`${-100}px`);
- document.body.appendChild(b);
- setTimeout(()=>b.remove(),6000);
+const fireworks=[];
+function Firework(){
+  this.x=Math.random()*w;
+  this.y=h;
+  this.tx=Math.random()*w;
+  this.ty=Math.random()*h*0.5;
+  this.sp=5+Math.random()*3;
+  this.done=false;
 }
-setInterval(spawnBless,250);
-
-const c=document.getElementById("c"),ctx=c.getContext("2d");
-function resize(){c.width=innerWidth;c.height=innerHeight}
-resize();onresize=resize;
-
-class Firework{
- constructor(){
-  this.x=Math.random()*c.width;
-  this.y=c.height;
-  this.vy=-(Math.random()*4+9);
-  this.vx=(Math.random()-0.5)*2;
- }
- update(){
-  this.x+=this.vx;this.y+=this.vy;this.vy+=0.04;
-  if(this.vy>0)this.explode();
- }
- draw(){
-  ctx.strokeStyle="rgba(255,200,100,0.9)";
-  ctx.beginPath();
-  ctx.moveTo(this.x,this.y);
-  ctx.lineTo(this.x,this.y+20);
-  ctx.stroke();
- }
- explode(){
-  for(let i=0;i<160;i++)particles.push(new Particle(this.x,this.y));
-  this.dead=true;
- }
+Firework.prototype.update=function(){
+  this.x+=(this.tx-this.x)/20;
+  this.y+=(this.ty-this.y)/20;
+  if(Math.abs(this.x-this.tx)<5) this.done=true;
+}
+Firework.prototype.draw=function(){
+  ctx.fillStyle="gold";
+  ctx.fillRect(this.x,this.y,2,8);
 }
 
-class Particle{
- constructor(x,y){
-  this.x=x;this.y=y;
-  const a=Math.random()*6.28,s=Math.random()*7+3;
-  this.vx=Math.cos(a)*s;this.vy=Math.sin(a)*s;
-  this.life=120;
-  this.color=`hsl(${Math.random()*360},100%,60%)`;
- }
- update(){
-  this.x+=this.vx;this.y+=this.vy;
-  this.vy+=0.05;this.life--;
- }
- draw(){
-  ctx.fillStyle=this.color;
-  ctx.globalAlpha=this.life/120;
-  ctx.beginPath();
-  ctx.arc(this.x,this.y,2.2,0,6.28);
-  ctx.fill();
-  ctx.globalAlpha=1;
- }
+function boom(x,y){
+  for(let i=0;i<120;i++){
+    fireworks.push({
+      x,y,
+      vx:(Math.random()-0.5)*8,
+      vy:(Math.random()-0.5)*8,
+      life:100,
+      c:`hsl(${Math.random()*360},100%,60%)`
+    });
+  }
 }
 
-let fireworks=[],particles=[];
-(function loop(){
- requestAnimationFrame(loop);
- ctx.fillStyle="rgba(0,0,0,0.25)";
- ctx.fillRect(0,0,c.width,c.height);
- if(Math.random()<0.08)fireworks.push(new Firework());
- fireworks=fireworks.filter(f=>!f.dead);
- fireworks.forEach(f=>{f.update();f.draw()});
- particles=particles.filter(p=>p.life>0);
- particles.forEach(p=>{p.update();p.draw()});
-})();
+function loop(){
+  ctx.fillStyle="rgba(0,0,0,0.25)";
+  ctx.fillRect(0,0,w,h);
+
+  if(Math.random()<0.12) rockets.push(new Firework());
+
+  rockets.forEach((r,i)=>{
+    r.update(); r.draw();
+    if(r.done){ boom(r.x,r.y); rockets.splice(i,1); }
+  });
+
+  fireworks.forEach((p,i)=>{
+    p.x+=p.vx; p.y+=p.vy; p.life--;
+    ctx.fillStyle=p.c;
+    ctx.fillRect(p.x,p.y,3,3);
+    if(p.life<0) fireworks.splice(i,1);
+  });
+
+  requestAnimationFrame(loop);
+}
+const rockets=[];
+loop();
+
+const texts=[
+"🎆 新 年 快 乐 🎆",
+"暴 富 暴 瘦",
+"学 业 有 成",
+"万 事 顺 意",
+"财 源 滚 滚",
+"健 康 平 安",
+"心 想 事 成"
+];
+let idx=0;
+const msg=document.getElementById("msg");
+setInterval(()=>{
+  msg.style.opacity=0;
+  setTimeout(()=>{
+    msg.innerHTML=texts[idx];
+    msg.style.opacity=1;
+    idx=(idx+1)%texts.length;
+  },800);
+},3000);
 </script>
 </body>
 </html>

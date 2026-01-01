@@ -2,37 +2,107 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>新年快乐 🎆</title>
+<title>2026 暴富烟花</title>
 <style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:black;}
-#text{position:absolute;top:40%;width:100%;text-align:center;color:#fff;
-font-size:48px;text-shadow:0 0 20px gold,0 0 40px red;}
-canvas{display:block;}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:"微软雅黑";}
+canvas{position:fixed;top:0;left:0;}
+.bless{
+ position:absolute;
+ font-size:28px;
+ font-weight:bold;
+ color:hsl(var(--h),100%,70%);
+ text-shadow:0 0 12px #fff,0 0 25px currentColor;
+ animation:fly 6s linear forwards;
+ white-space:nowrap;
+}
+@keyframes fly{
+ from{transform:translate(var(--x1),var(--y1)) scale(0.5) rotate(0deg);opacity:1}
+ to{transform:translate(var(--x2),var(--y2)) scale(1.4) rotate(360deg);opacity:0}
+}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="text">🎉 新 年 快 乐 🎉</div>
+
 <script>
+const blessList=["💰 暴富","📈 升职加薪","🍀 中彩票","💖 脱单","📚 全部上岸",
+"✨ 暴瘦","🎯 心想事成","🚀 年入百万","🏆 考研成功","🏡 买房买车"];
+
+function spawnBless(){
+ const b=document.createElement("div");
+ b.className="bless";
+ b.innerText=blessList[Math.floor(Math.random()*blessList.length)];
+ b.style.setProperty("--h",Math.random()*360);
+ b.style.setProperty("--x1",`${Math.random()*innerWidth}px`);
+ b.style.setProperty("--y1",`${innerHeight+50}px`);
+ b.style.setProperty("--x2",`${Math.random()*innerWidth}px`);
+ b.style.setProperty("--y2",`${-100}px`);
+ document.body.appendChild(b);
+ setTimeout(()=>b.remove(),6000);
+}
+setInterval(spawnBless,250);
+
 const c=document.getElementById("c"),ctx=c.getContext("2d");
-function resize(){c.width=innerWidth;c.height=innerHeight}resize();onresize=resize;
-class F{constructor(){this.x=Math.random()*c.width;this.y=c.height;
-this.tx=Math.random()*c.width;this.ty=Math.random()*c.height/2;
-this.vx=(this.tx-this.x)/60;this.vy=(this.ty-this.y)/60;this.e=false;this.p=[]}
-u(){if(!this.e){this.x+=this.vx;this.y+=this.vy;if(Math.abs(this.y-this.ty)<5)this.xp()}
-else this.p.forEach(i=>i.u())}
-d(){if(!this.e){ctx.fillStyle="white";ctx.fillRect(this.x,this.y,2,2)}
-else this.p.forEach(i=>i.d())}
-xp(){this.e=true;for(let i=0;i<60;i++)this.p.push(new P(this.x,this.y))}}
-class P{constructor(x,y){this.x=x;this.y=y;let a=Math.random()*6.28,s=Math.random()*4+2;
-this.vx=Math.cos(a)*s;this.vy=Math.sin(a)*s;this.l=80;this.c=`hsl(${Math.random()*360},100%,60%)`}
-u(){this.x+=this.vx;this.y+=this.vy;this.vy+=.05;this.l--}
-d(){if(this.l>0){ctx.fillStyle=this.c;ctx.fillRect(this.x,this.y,2,2)}}}
-let fs=[];
-(function a(){requestAnimationFrame(a);
-ctx.fillStyle="rgba(0,0,0,0.2)";ctx.fillRect(0,0,c.width,c.height);
-if(Math.random()<0.05)fs.push(new F());
-fs=fs.filter(f=>!f.e||f.p.some(p=>p.l>0));fs.forEach(f=>{f.u();f.d()})})();
+function resize(){c.width=innerWidth;c.height=innerHeight}
+resize();onresize=resize;
+
+class Firework{
+ constructor(){
+  this.x=Math.random()*c.width;
+  this.y=c.height;
+  this.vy=-(Math.random()*4+9);
+  this.vx=(Math.random()-0.5)*2;
+ }
+ update(){
+  this.x+=this.vx;this.y+=this.vy;this.vy+=0.04;
+  if(this.vy>0)this.explode();
+ }
+ draw(){
+  ctx.strokeStyle="rgba(255,200,100,0.9)";
+  ctx.beginPath();
+  ctx.moveTo(this.x,this.y);
+  ctx.lineTo(this.x,this.y+20);
+  ctx.stroke();
+ }
+ explode(){
+  for(let i=0;i<160;i++)particles.push(new Particle(this.x,this.y));
+  this.dead=true;
+ }
+}
+
+class Particle{
+ constructor(x,y){
+  this.x=x;this.y=y;
+  const a=Math.random()*6.28,s=Math.random()*7+3;
+  this.vx=Math.cos(a)*s;this.vy=Math.sin(a)*s;
+  this.life=120;
+  this.color=`hsl(${Math.random()*360},100%,60%)`;
+ }
+ update(){
+  this.x+=this.vx;this.y+=this.vy;
+  this.vy+=0.05;this.life--;
+ }
+ draw(){
+  ctx.fillStyle=this.color;
+  ctx.globalAlpha=this.life/120;
+  ctx.beginPath();
+  ctx.arc(this.x,this.y,2.2,0,6.28);
+  ctx.fill();
+  ctx.globalAlpha=1;
+ }
+}
+
+let fireworks=[],particles=[];
+(function loop(){
+ requestAnimationFrame(loop);
+ ctx.fillStyle="rgba(0,0,0,0.25)";
+ ctx.fillRect(0,0,c.width,c.height);
+ if(Math.random()<0.08)fireworks.push(new Firework());
+ fireworks=fireworks.filter(f=>!f.dead);
+ fireworks.forEach(f=>{f.update();f.draw()});
+ particles=particles.filter(p=>p.life>0);
+ particles.forEach(p=>{p.update();p.draw()});
+})();
 </script>
 </body>
 </html>
